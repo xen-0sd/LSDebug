@@ -19,7 +19,16 @@ while true do
 	z = rs32(0x91E78)
 	cX = 318 --Center of graph.png
 	cY = 19 --Center of graph.png
-
+	
+	displayObjects = true	-- Display list of loaded objects
+	displayObjectID = true	-- Display the Object's ID infront of its name
+	displayObjectState = true	-- Display the Object's state after its name. Only some objects use this value
+	displayObjectPosition = true	-- Display Object's position after its name
+	defaultColor = "#FFFFFF"
+	impressionColor = "#4CD76F"	-- Player has `viewed` the object
+	interactColor = "#999999"	-- Object is not interactable (usually invisible)
+	local objectNames = {"Astronaut", "Gargoyle", "Alive Woman", "Dying Woman (Corpse)", "Empty Bed", "Futon", "[???]", "Gargoyle", "Elephant (Floating)", "Minotaur", "Giant Monster", "Huge Geisha", "Old Woman", "Shrine Bell", "Gondola", "Drum Sticks", "White Fox", "Halo", "Fukusuke Statue", "Tea Doll", "Giant Buddha", "Rickshaw Minotaur", "Peacock", "Celestial Maiden (Descends)", "Bird", "Rocket", "Horse", "UFO", "Brother and Sister", "Rainbow", "White Bird", "Abyss Demon", "Sailing Boat", "Turtle (Huge)", "Fin", "Fish", "Mirage", "Balloon (Inside Hole)", "Opera Singer", "Mushroom", "Soldier", "Train (Factory)", "Trumpeter", "Bear", "Rabbit", "Prince and Princess", "Flower", "Ferris Wheel", "Lips (Huge)", "Train (Kyoto)", "Whale", "Upright Penguin", "Sliding Penguin", "Arrow", "Question Mark (Fixed)", "Hop Scotch Girl", "Corpse", "Plane", "Hanged Woman (Unresponsive)", "Starship", "Crane Light", "Kicking Man", "Ghost (Normal)", "Sailor", "Ship", "Geisha (Normal/Giant)", "Balancing Child", "Light", "Dog", "Machinery", "Ring", "Stick and Hoop Girl", "[???]", "Small Room", "Cloud", "Window", "Flower", "Teddy Bear", "Sumo (In Match)", "Celestial Globe", "Huge Face", "Lion", "Woman", "Can", "Car (Water)", "Gunman", "Victim", "Boy (Red)", "Boy (Purple)", "Garbage Can", "TV", "Big Faced Man (Hidden)", "Big Faced Man", "Doubleface (No Link)", "Tengu (Walking)", "Fetus (Walking)", "Fetus (Bouncing)", "[???]", "Gray Man", "[???]", "[???]", "[???]", "Winged Minotaur", "Zeppelin", "Geisha (Small)", "Dying Woman (Dying)", "Doubleface (Bartender)", "Doubleface (Link)", "Stick and Hoop Girl (Huge)", "Elephant (Small)", "Geisha (Bridge)", "Train (Natural)", "Opera Singer (Group)", "Question Mark (Above Upright Penguin)", "Upright Penguin (Group)", "Hanged Woman (Tied Up)", "Hanged Woman (Group)", "Ghost (Huge)", "Huge Fish", "Brother and Sister (Group)", "Lion (Group)", "Turtle (Small)", "White Bird (Group)", "Car", "[???]", "Geisha", "Tengu (Hover)", "Celestial Maiden (Indoors)", "Lips (Small)", "Sumo (Waiting)"}
+	object_list = ru32(0x91534)	-- Object Linked List
 			
 	daytxt = day+1 --What is internally "Day 0" is displayed as "Day 1" in-game and in this debug menu
 	
@@ -45,7 +54,7 @@ while true do
 		lank_last_area_x = 0
 	  elseif last_area_x >= -5 then
 		lank_last_area_x = -1
-	  elseif last_area_x <= -6 then
+	  elseif last_area_x >= -9 then
 		lank_last_area_x = -2
 	  end
 	  last_area_y  = memory.readbyte(0x0091675)
@@ -60,7 +69,7 @@ while true do
 		lank_last_area_y = 0
 	  elseif last_area_y >= -5 then
 		lank_last_area_y = -1
-	  elseif last_area_y <= -6 then
+	  elseif last_area_y >= -9 then
 		lank_last_area_y = -2
 	  end
 	  area_counter = memory.readbyte(0x0091680) + memory.readbyte(0x0091681)*256 + memory.readbyte(0x0091682)*256*256 + memory.readbyte(0x0091683)*256*256*256
@@ -88,7 +97,7 @@ while true do
 		lank_last_chara_x = 0
 	  elseif last_chara_x >= -5 then
 		lank_last_chara_x = -1
-	  elseif last_chara_x <= -6 then
+	  elseif last_chara_x >= -9 then
 		lank_last_chara_x = -2
 	  end
 	  last_chara_y  = memory.readbyte(0x0091685)
@@ -103,7 +112,7 @@ while true do
 		lank_last_chara_y = 0
 	  elseif last_chara_y >= -5 then
 		lank_last_chara_y = -1
-	  elseif last_chara_y <= -6 then
+	  elseif last_chara_y >= -9 then
 		lank_last_chara_y = -2
 	  end
 	  chara_counter = memory.readbyte(0x0091690) + memory.readbyte(0x0091691)*256 + memory.readbyte(0x0091692)*256*256 + memory.readbyte(0x0091693)*256*256*256
@@ -418,5 +427,68 @@ while true do
 	gui.pixelText(170, 208, "Y "..y, "lightgreen")
 	gui.pixelText(170, 216, "Z "..z, "skyblue")
 	
+	if displayObjects then
+		object_index = 0
+		list_node_pointer = object_list
+		
+		while true do
+			if (readbyte(list_node_pointer+3) ~= 128) then	-- Pointer check
+				break
+			end
+			
+			data_node_pointer = ru32(list_node_pointer+4)
+			data_node_len = memory.read_u16_le(data_node_pointer-4)	-- Data Node length, always 0x010c for objects
+			if (data_node_len ~= 268) then
+				break
+			end
+			
+			object_id = ru32(data_node_pointer+152)+1
+			interact_flag = ru32(data_node_pointer+240)
+			impression_flag = ru32(data_node_pointer+244)
+			object_state = ru32(data_node_pointer+68)
+			
+			object_position_pointer = ru32(data_node_pointer+20)
+			object_position_x = rs32(object_position_pointer+24)
+			object_position_y = rs32(object_position_pointer+28)
+			object_position_z = rs32(object_position_pointer+32)
+			
+			text_color = defaultColor
+			if impression_flag ~= 0 then
+				text_color = impressionColor
+			end
+			if interact_flag == 0 then
+				text_color = interactColor
+			end
+			
+			text_string = objectNames[object_id]
+			
+			if displayObjectID then
+				object_id_string = object_id
+				if object_id < 10 then
+					object_id_string = " " .. object_id_string
+				end
+				if object_id < 100 then
+					object_id_string = " " .. object_id_string
+				end
+				text_string = object_id_string .. " " .. text_string
+			end
+			if displayObjectState then
+				text_string = text_string .. " " .. object_state
+			end
+			if displayObjectPosition then
+				text_string = text_string .. " [" .. object_position_x .. ", " .. object_position_y .. ", " .. object_position_z .. "]"
+			end
+			
+			gui.pixelText(18,32+(object_index*8),text_string, text_color)
+			
+			p2 = readbyte(list_node_pointer+3)
+			
+			object_index = object_index + 1
+			if object_index > 30 then
+				break
+			end
+			list_node_pointer = ru32(list_node_pointer)
+		end
+	end
 	emu.frameadvance()
 end
