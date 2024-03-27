@@ -97,7 +97,7 @@ while true do
 		lank_last_chara_x = 0
 	  elseif last_chara_x >= -5 then
 		lank_last_chara_x = -1
-	  elseif last_chara_x >= -9 then
+	  elseif last_chara_x <= -6 then
 		lank_last_chara_x = -2
 	  end
 	  last_chara_y  = memory.readbyte(0x0091685)
@@ -112,7 +112,7 @@ while true do
 		lank_last_chara_y = 0
 	  elseif last_chara_y >= -5 then
 		lank_last_chara_y = -1
-	  elseif last_chara_y >= -9 then
+	  elseif last_chara_y <= -6 then
 		lank_last_chara_y = -2
 	  end
 	  chara_counter = memory.readbyte(0x0091690) + memory.readbyte(0x0091691)*256 + memory.readbyte(0x0091692)*256*256 + memory.readbyte(0x0091693)*256*256*256
