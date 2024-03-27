@@ -54,7 +54,7 @@ while true do
 		lank_last_area_x = 0
 	  elseif last_area_x >= -5 then
 		lank_last_area_x = -1
-	  elseif last_area_x >= -9 then
+	  elseif last_area_x <= -6 then
 		lank_last_area_x = -2
 	  end
 	  last_area_y  = memory.readbyte(0x0091675)
@@ -69,7 +69,7 @@ while true do
 		lank_last_area_y = 0
 	  elseif last_area_y >= -5 then
 		lank_last_area_y = -1
-	  elseif last_area_y >= -9 then
+	  elseif last_area_y <= -6 then
 		lank_last_area_y = -2
 	  end
 	  area_counter = memory.readbyte(0x0091680) + memory.readbyte(0x0091681)*256 + memory.readbyte(0x0091682)*256*256 + memory.readbyte(0x0091683)*256*256*256
