@@ -1,4 +1,6 @@
 # LSDebug
+I'mmmmm foobar!
+
 A lua script for [Bizhawk](https://github.com/TASEmulators/BizHawk) that superimposes a community-made "debug menu" onto LSD: Dream Emulator.
 
 # Guide
